@@ -1,39 +1,54 @@
-# Weather & Flight Booker Extension
+🌤 Weather & ✈️ Flight Booker
+A Chrome extension that helps users plan trips by fetching real-time weather forecasts for both origin and destination cities using the OpenWeather API, and simulates flight booking logic for seamless travel planning.
 
-This Chrome Extension allows users to check the weather forecast using the 7Timer API and book flights via a Flask-powered itinerary backend.
+🚀 Features
+🔍 Live Weather Forecasts for any city worldwide
 
-## Features
+🌍 Dual-City Support: View conditions at both departure and arrival locations
 
-- 🌤 Check weather forecast for any location
-- ✈️ Book flights directly from the extension
-- 🔗 Connects to a local Flask API for flight logic
+📅 Date Selection for planned travel
 
-## Folder Structure
+✈️ Flight Booking Simulation (ready for API integration)
 
-weather-flight-extension/ ├── manifest.json ├── popup.html ├── popup.js ├── background.js ├── assets/ │ ├── icon16.png │ ├── icon48.png │ ├── icon128.png ├── styles/ │ └── popup.css └── README.md
+🧾 Activity Log to track user actions and system responses
 
-Code
+⚡ Responsive UI built with HTML, CSS (Tailwind), and JavaScript
 
-## Setup
+🧠 Flask Backend for secure API handling and data processing
 
-1. Clone this repo.
-2. Run the Flask server:
-   ```bash
-   python app.py
+🛠️ Tech Stack
+Frontend: HTML, Tailwind CSS, JavaScript
+
+Backend: Python Flask
+
+APIs:
+
+OpenWeather API for weather data
+
+(Optional) Flight API integration (e.g., Skyscanner, Amadeus)
+
+📦 Installation
+Clone the repo:
+
+bash
+git clone https://github.com/your-username/weather-flight-booker.git
 Load the extension in Chrome:
 
 Go to chrome://extensions
 
-Enable "Developer mode"
+Enable Developer Mode
 
-Click "Load unpacked"
+Click Load unpacked
 
-Select the weather-flight-extension folder
+Select the Weather-Flight-Booker folder
 
-APIs Used
-7Timer Weather API
+Start the Flask server:
 
-Local Flask API (/book-flight)
+bash
+cd backend
+python app.py
+📸 Screenshots
+Add screenshots of the popup UI, weather results, and activity log here.
 
-License
-MIT
+📄 License
+This project is licensed under the MIT License.

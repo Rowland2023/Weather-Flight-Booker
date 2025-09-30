@@ -6,15 +6,13 @@ const bookFlightBtn = document.getElementById('bookFlight');
 const loader = document.getElementById('loader');
 const originWeather = document.getElementById('origin-weather');
 const destinationWeather = document.getElementById('destination-weather');
+const originForecastDays = document.getElementById('origin-forecast-days');
+const destinationForecastDays = document.getElementById('destination-forecast-days');
 const flightDetails = document.getElementById('flight-details');
 const logDisplay = document.getElementById('log-display');
 
 const apiKey = '078a0109c369079731b557bebe2157c6';
 
-/**
- * Normalize location input to include country code if missing.
- * This helps OpenWeatherMap resolve ambiguous city names.
- */
 function normalizeLocation(location) {
   const city = location.trim();
   const presets = {
@@ -49,28 +47,68 @@ function log(message, type = 'info') {
 async function fetchWeather(location) {
   const normalized = normalizeLocation(location);
   const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(normalized)}&units=metric&appid=${apiKey}`;
-  console.log(`Fetching weather from: ${url}`);
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Weather data not found for ${location}`);
+  return await response.json();
+}
+
+async function fetchForecast(location) {
+  const normalized = normalizeLocation(location);
+  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(normalized)}&units=metric&appid=${apiKey}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Forecast data not found for ${location}`);
   return await response.json();
 }
 
 function formatWeather(data, labelColor) {
   const temp = `${Math.round(data.main.temp)}°C`;
   const conditions = data.weather[0].description;
+  const icon = data.weather[0].icon;
   const wind = `${data.wind.speed} m/s`;
   const visibility = data.visibility ? `${data.visibility / 1000} km` : 'N/A';
   const pressure = `${data.main.pressure} hPa`;
 
   return `
-    <p class="text-xl font-bold ${labelColor} capitalize">${conditions}</p>
-    <p class="text-4xl font-extrabold text-gray-900">${temp}</p>
+    <div class="flex items-center gap-3">
+      <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${conditions}" />
+      <div>
+        <p class="text-xl font-bold ${labelColor} capitalize">${conditions}</p>
+        <p class="text-4xl font-extrabold text-gray-900">${temp}</p>
+      </div>
+    </div>
     <ul class="text-sm space-y-1 mt-3 text-gray-700">
       <li><strong>Wind:</strong> ${wind}</li>
       <li><strong>Visibility:</strong> ${visibility}</li>
       <li><strong>Pressure:</strong> ${pressure}</li>
     </ul>
   `;
+}
+
+function formatForecastDays(data) {
+  const daily = {};
+  data.list.forEach(entry => {
+    const date = entry.dt_txt.split(' ')[0];
+    if (!daily[date] && entry.dt_txt.includes('12:00:00')) {
+      daily[date] = entry;
+    }
+  });
+
+  const days = Object.keys(daily).slice(0, 3);
+  return days.map(date => {
+    const entry = daily[date];
+    const icon = entry.weather[0].icon;
+    const temp = `${Math.round(entry.main.temp)}°C`;
+    const condition = entry.weather[0].description;
+    return `
+      <div class="flex items-center gap-3 text-sm text-gray-700">
+        <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${condition}" />
+        <div>
+          <p class="font-semibold">${date}</p>
+          <p class="capitalize">${condition} — ${temp}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 async function handleGetWeather() {
@@ -86,19 +124,25 @@ async function handleGetWeather() {
   getWeatherBtn.disabled = true;
 
   try {
-    const [originData, destinationData] = await Promise.all([
+    const [originData, destinationData, originForecast, destinationForecast] = await Promise.all([
       fetchWeather(origin),
-      fetchWeather(destination)
+      fetchWeather(destination),
+      fetchForecast(origin),
+      fetchForecast(destination)
     ]);
 
     originWeather.innerHTML = formatWeather(originData, 'text-green-700');
     destinationWeather.innerHTML = formatWeather(destinationData, 'text-indigo-700');
+    originForecastDays.innerHTML = formatForecastDays(originForecast);
+    destinationForecastDays.innerHTML = formatForecastDays(destinationForecast);
 
     log(`Weather loaded for both locations.`, 'success');
   } catch (error) {
     log(`Failed to fetch weather: ${error.message}`, 'error');
     originWeather.innerHTML = `<p class="text-red-500">Error loading origin weather.</p>`;
     destinationWeather.innerHTML = `<p class="text-red-500">Error loading destination weather.</p>`;
+    originForecastDays.innerHTML = '';
+    destinationForecastDays.innerHTML = '';
   } finally {
     loader.classList.add('hidden');
     getWeatherBtn.disabled = false;
