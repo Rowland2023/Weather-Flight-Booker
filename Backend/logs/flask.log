@@ -1,0 +1,33 @@
+2025-09-30 12:53:11,598 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 12:53:11,604 INFO: [33mPress CTRL+C to quit[0m
+2025-09-30 12:53:11,620 INFO:  * Restarting with stat
+2025-09-30 12:58:11,024 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 12:58:11,024 INFO: [33mPress CTRL+C to quit[0m
+2025-09-30 12:58:11,026 INFO:  * Restarting with stat
+2025-09-30 13:02:57,639 INFO:  * Detected change in 'C:\\Users\\rowla\\Weather-Flight-Booker\\Extension\\Backend\\app.py', reloading
+2025-09-30 13:02:57,670 INFO:  * Restarting with stat
+2025-09-30 13:03:47,691 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 13:03:47,691 INFO: [33mPress CTRL+C to quit[0m
+2025-09-30 13:03:47,693 INFO:  * Restarting with stat
+2025-09-30 13:04:45,526 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 13:04:45,526 INFO: [33mPress CTRL+C to quit[0m
+2025-09-30 13:06:50,376 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 13:06:50,376 INFO: [33mPress CTRL+C to quit[0m
+2025-09-30 13:07:11,552 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 13:07:11,552 INFO: [33mPress CTRL+C to quit[0m
+2025-09-30 13:07:59,783 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 13:07:59,783 INFO: [33mPress CTRL+C to quit[0m
+2025-09-30 13:07:59,783 INFO:  * Restarting with stat
+2025-09-30 13:08:00,783 WARNING:  * Debugger is active!
+2025-09-30 13:08:01,557 INFO:  * Debugger PIN: 133-592-255
+2025-09-30 13:13:50,159 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-30 13:13:50,160 INFO: [33mPress CTRL+C to quit[0m
+2025-09-30 13:13:50,175 INFO:  * Restarting with stat
