@@ -1,3 +1,4 @@
+// DOM Elements
 const originInput = document.getElementById('originInput');
 const destinationInput = document.getElementById('destinationInput');
 const departureDate = document.getElementById('departureDate');
@@ -11,23 +12,24 @@ const destinationForecastDays = document.getElementById('destination-forecast-da
 const flightDetails = document.getElementById('flight-details');
 const logDisplay = document.getElementById('log-display');
 
-const apiKey = '078a0109c369079731b557bebe2157c6';
+// API Keys
+const weatherKey = '078a0109c369079731b557bebe2157c6';
+const amadeusKey = 'GFB9M1zGXs6tto0bKjYFfGhy6TvftuWR';
+const amadeusSecret = 'bFJKPGJunj7kgIrF';
 
-function normalizeLocation(location) {
-  const city = location.trim();
-  const presets = {
-    'Lagos': 'Lagos,NG',
-    'London': 'London,GB',
-    'Paris': 'Paris,FR',
-    'Accra': 'Accra,GH',
-    'New York': 'New York,US',
-    'Toronto': 'Toronto,CA',
-    'Berlin': 'Berlin,DE',
-    'Tokyo': 'Tokyo,JP'
-  };
-  return presets[city] || city;
-}
+// IATA Code Mapping
+const airportCodes = {
+  'Lagos': 'LOS',
+  'London': 'LHR',
+  'Paris': 'CDG',
+  'New York': 'JFK',
+  'Toronto': 'YYZ',
+  'Accra': 'ACC',
+  'Tokyo': 'HND',
+  'Berlin': 'BER'
+};
 
+// Logger
 function log(message, type = 'info') {
   const timestamp = new Date().toLocaleTimeString();
   const logEntry = document.createElement('div');
@@ -44,9 +46,26 @@ function log(message, type = 'info') {
   console.log(`[${type.toUpperCase()}] ${timestamp}: ${message}`);
 }
 
+// Normalize location for weather API
+function normalizeLocation(location) {
+  const city = location.trim();
+  const presets = {
+    'Lagos': 'Lagos,NG',
+    'London': 'London,GB',
+    'Paris': 'Paris,FR',
+    'Accra': 'Accra,GH',
+    'New York': 'New York,US',
+    'Toronto': 'Toronto,CA',
+    'Berlin': 'Berlin,DE',
+    'Tokyo': 'Tokyo,JP'
+  };
+  return presets[city] || city;
+}
+
+// Weather API
 async function fetchWeather(location) {
   const normalized = normalizeLocation(location);
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(normalized)}&units=metric&appid=${apiKey}`;
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(normalized)}&units=metric&appid=${weatherKey}`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Weather data not found for ${location}`);
   return await response.json();
@@ -54,7 +73,7 @@ async function fetchWeather(location) {
 
 async function fetchForecast(location) {
   const normalized = normalizeLocation(location);
-  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(normalized)}&units=metric&appid=${apiKey}`;
+  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(normalized)}&units=metric&appid=${weatherKey}`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Forecast data not found for ${location}`);
   return await response.json();
@@ -111,6 +130,32 @@ function formatForecastDays(data) {
   }).join('');
 }
 
+// Amadeus API
+async function getAccessToken() {
+  const response = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: amadeusKey,
+      client_secret: amadeusSecret
+    })
+  });
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function searchFlights(origin, destination, date, token) {
+  const originCode = airportCodes[origin] || origin;
+  const destinationCode = airportCodes[destination] || destination;
+  const url = `https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${originCode}&destinationLocationCode=${destinationCode}&departureDate=${date}&adults=1`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await response.json();
+  return data.data;
+}
+// Event Handlers
 async function handleGetWeather() {
   const origin = originInput.value.trim();
   const destination = destinationInput.value.trim();
@@ -149,7 +194,7 @@ async function handleGetWeather() {
   }
 }
 
-function handleBookFlight() {
+async function handleBookFlight() {
   const origin = originInput.value.trim();
   const destination = destinationInput.value.trim();
   const date = departureDate.value;
@@ -159,27 +204,54 @@ function handleBookFlight() {
     return;
   }
 
-  log(`Booking flight from ${origin} to ${destination} on ${date}...`, 'info');
+  log(`Searching flights from ${origin} to ${destination} on ${date}...`, 'info');
+  loader.classList.remove('hidden');
+  bookFlightBtn.disabled = true;
 
-  flightDetails.innerHTML = `
-    <ul class="space-y-2">
-      <li><strong>Route:</strong> ${origin} → ${destination}</li>
-      <li><strong>Date:</strong> ${date}</li>
-      <li><strong>Price:</strong> ₦250,000</li>
-      <li><strong>Status:</strong> On Time</li>
-      <li><strong>Cancellation:</strong> Refundable within 24 hours</li>
-    </ul>
-  `;
+  try {
+    const token = await getAccessToken();
+    const flights = await searchFlights(origin, destination, date, token);
 
-  if (chrome.tabs) {
-    const searchUrl = `https://www.google.com/search?q=book+flights+from+${encodeURIComponent(origin)}+to+${encodeURIComponent(destination)}+on+${encodeURIComponent(date)}`;
-    chrome.tabs.create({ url: searchUrl });
-    log(`Opened tab for flight search.`, 'success');
-  } else {
-    log('Simulated booking. Chrome API not available.', 'warning');
+    if (!flights || flights.length === 0) {
+      throw new Error('No flights found.');
+    }
+
+    const flight = flights[0];
+    const itinerary = flight.itineraries[0];
+    const segment = itinerary.segments[0];
+    const price = flight.price.total;
+    const airline = segment.carrierCode;
+    const stops = itinerary.segments.length - 1;
+
+    flightDetails.innerHTML = `
+      <ul class="space-y-2">
+        <li><strong>Route:</strong> ${origin} → ${destination}</li>
+        <li><strong>Date:</strong> ${date}</li>
+        <li><strong>Airline:</strong> ${airline}</li>
+        <li><strong>Stops:</strong> ${stops === 0 ? 'Non-stop' : stops}</li>
+        <li><strong>Price:</strong> $${price}</li>
+        <li><strong>Status:</strong> Available</li>
+      </ul>
+    `;
+
+    log(`Flight found: ${airline} for $${price}`, 'success');
+  } catch (error) {
+    log(`Flight search failed: ${error.message}`, 'error');
+    flightDetails.innerHTML = `
+      <ul class="space-y-2 text-red-500">
+        <li><strong>Error:</strong> Could not load flight data.</li>
+        <li><strong>Fallback:</strong> Simulated flight from ${origin} to ${destination} on ${date}</li>
+        <li><strong>Price:</strong> ₦250,000</li>
+        <li><strong>Status:</strong> On Time</li>
+      </ul>
+    `;
+  } finally {
+    loader.classList.add('hidden');
+    bookFlightBtn.disabled = false;
   }
 }
 
+// Final Listeners
 getWeatherBtn.addEventListener('click', handleGetWeather);
 bookFlightBtn.addEventListener('click', handleBookFlight);
 window.onload = () => log('Extension popup ready.', 'info');
