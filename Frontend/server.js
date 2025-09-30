@@ -3,6 +3,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const winston = require('winston');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.NODE_PORT || 3000;
@@ -24,6 +25,15 @@ const logger = winston.createLogger({
 app.use(cors());
 app.use(express.json());
 
+// Serve static frontend files (e.g. popup.html, popup.js)
+app.use(express.static(path.join(__dirname, 'Frontend')));
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.send('Node gateway is running.');
+});
+
+// Proxy booking request to Flask backend
 app.post('/spawn-booking', async (req, res) => {
   try {
     logger.info(`Received booking request: ${JSON.stringify(req.body)}`);
