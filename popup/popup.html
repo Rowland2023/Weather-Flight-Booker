@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather & Flight Booker</title>
+  <link rel="stylesheet" href="../styles/output.css" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      min-width: 380px;
+      max-height: 650px;
+      overflow-y: auto;
+      background-color: #f8fafc;
+    }
+    #log-display {
+      max-height: 150px;
+      overflow-y: scroll;
+      direction: rtl;
+    }
+    #log-display > div {
+      direction: ltr;
+    }
+    .input-focus:focus {
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+      border-color: #6366f1;
+    }
+  </style>
+</head>
+<body class="p-4">
+  <header class="mb-6 border-b pb-3">
+    <h2 class="text-2xl font-extrabold text-indigo-700 flex items-center gap-2">
+      🌤 Weather & ✈️ Flight Booker
+    </h2>
+  </header>
+
+  <main class="space-y-6">
+    <!-- Input Section -->
+    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 space-y-4">
+      <input type="text" id="originInput" placeholder="Origin (e.g. Lagos)"
+             class="w-full p-3 border border-gray-300 rounded-lg input-focus" />
+      <input type="text" id="destinationInput" placeholder="Destination (e.g. London)"
+             class="w-full p-3 border border-gray-300 rounded-lg input-focus" />
+      <input type="date" id="departureDate"
+             class="w-full p-3 border border-gray-300 rounded-lg input-focus" />
+
+      <div class="flex gap-3 pt-2">
+        <button id="getWeather"
+                class="flex-1 py-3 text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700">
+          Get Weather
+        </button>
+        <button id="bookFlight"
+                class="flex-1 py-3 text-white bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700">
+          Book Flight
+        </button>
+      </div>
+
+      <div id="loader" class="text-center py-2 hidden">
+        <div class="text-sm font-medium text-indigo-500 animate-pulse">Processing request...</div>
+      </div>
+    </div>
+
+    <!-- Dual Weather Forecast Panels -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Origin Forecast -->
+      <div id="origin-forecast" class="p-5 bg-white rounded-xl shadow-lg border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Origin Forecast</h3>
+        <div id="origin-weather" class="text-gray-600 text-sm italic">
+          Awaiting origin input...
+        </div>
+      </div>
+
+      <!-- Destination Forecast -->
+      <div id="destination-forecast" class="p-5 bg-white rounded-xl shadow-lg border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Destination Forecast</h3>
+        <div id="destination-weather" class="text-gray-600 text-sm italic">
+          Awaiting destination input...
+        </div>
+      </div>
+    </section>
+
+    <!-- Flight Info -->
+    <section id="flight-info" class="p-5 bg-white rounded-xl shadow-lg border border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Flight Details</h3>
+      <div id="flight-details" class="text-gray-600 text-sm italic">
+        No flight data yet.
+      </div>
+    </section>
+
+    <!-- Activity Log -->
+    <section class="p-4 bg-gray-900 rounded-xl shadow-inner">
+      <h3 class="text-sm font-bold text-gray-200 mb-2 uppercase tracking-wider">Activity Log</h3>
+      <div id="log-display" class="bg-black p-2 rounded-lg text-white font-mono text-xs border border-gray-700"></div>
+    </section>
+  </main>
+
+  <script src="../popup/popup.js"></script>
+</body>
+</html>
