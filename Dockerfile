@@ -1,4 +1,3 @@
-# Use official Node + Python base image
 FROM node:18-bullseye
 
 # Install Python and pip
@@ -10,14 +9,14 @@ WORKDIR /app
 # Copy all files
 COPY . .
 
-# Install Node dependencies
-RUN cd Frontend && npm install
+# Install Node dependencies and concurrently
+RUN cd Frontend && npm install && npm install concurrently
 
 # Install Python dependencies
 RUN cd Backend && pip3 install -r requirements.txt
 
-# Expose port for Node
+# Expose frontend port
 EXPOSE 3000
 
-# Start both Node and Flask using concurrently
+# Start both frontend and backend
 CMD ["npm", "start"]
