@@ -1,21 +1,22 @@
-# Use the official Node image as the base
 FROM node:18-bullseye
 
-# Set the working directory
-WORKDIR /app/Frontend
+# Install Python and pip
+RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Copy the package.json and package-lock.json
-COPY Frontend/package*.json ./
+# Set working directory
+WORKDIR /app
+
+# Copy all files
+COPY . .
 
 # Install Node dependencies
 RUN npm install
 
-# Copy the rest of the frontend code
-COPY Frontend .
+# Install Python dependencies
+RUN pip3 install -r Backend/requirements.txt
 
-# Expose the port (e.g., 3000)
+# Expose frontend port
 EXPOSE 3000
 
-# Start the Node server (which is the proxy)
-# This executes: "node index.js"
+# Start both frontend and backend
 CMD ["npm", "start"]
