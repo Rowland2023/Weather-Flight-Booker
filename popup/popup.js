@@ -12,11 +12,6 @@ const destinationForecastDays = document.getElementById('destination-forecast-da
 const flightDetails = document.getElementById('flight-details');
 const logDisplay = document.getElementById('log-display');
 
-// API Keys
-const weatherKey = '078a0109c369079731b557bebe2157c6';
-const amadeusKey = 'GFB9M1zGXs6tto0bKjYFfGhy6TvftuWR';
-const amadeusSecret = 'bFJKPGJunj7kgIrF';
-
 // IATA Code Mapping
 const airportCodes = {
   'Lagos': 'LOS',
@@ -46,46 +41,20 @@ function log(message, type = 'info') {
   console.log(`[${type.toUpperCase()}] ${timestamp}: ${message}`);
 }
 
-// Normalize location for weather API
-function normalizeLocation(location) {
-  const city = location.trim();
-  const presets = {
-    'Lagos': 'Lagos,NG',
-    'London': 'London,GB',
-    'Paris': 'Paris,FR',
-    'Accra': 'Accra,GH',
-    'New York': 'New York,US',
-    'Toronto': 'Toronto,CA',
-    'Berlin': 'Berlin,DE',
-    'Tokyo': 'Tokyo,JP'
-  };
-  return presets[city] || city;
-}
-
-// Weather API
+// Weather API via backend
 async function fetchWeather(location) {
-  const normalized = normalizeLocation(location);
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(normalized)}&units=metric&appid=${weatherKey}`;
-  const response = await fetch(url);
+  const response = await fetch(`/weather?city=${encodeURIComponent(location)}`);
   if (!response.ok) throw new Error(`Weather data not found for ${location}`);
   return await response.json();
 }
 
-async function fetchForecast(location) {
-  const normalized = normalizeLocation(location);
-  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(normalized)}&units=metric&appid=${weatherKey}`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Forecast data not found for ${location}`);
-  return await response.json();
-}
-
 function formatWeather(data, labelColor) {
-  const temp = `${Math.round(data.main.temp)}°C`;
-  const conditions = data.weather[0].description;
-  const icon = data.weather[0].icon;
-  const wind = `${data.wind.speed} m/s`;
-  const visibility = data.visibility ? `${data.visibility / 1000} km` : 'N/A';
-  const pressure = `${data.main.pressure} hPa`;
+  const temp = `${Math.round(data.list[0].main.temp)}°C`;
+  const conditions = data.list[0].weather[0].description;
+  const icon = data.list[0].weather[0].icon;
+  const wind = `${data.list[0].wind.speed} m/s`;
+  const visibility = data.list[0].visibility ? `${data.list[0].visibility / 1000} km` : 'N/A';
+  const pressure = `${data.list[0].main.pressure} hPa`;
 
   return `
     <div class="flex items-center gap-3">
@@ -129,8 +98,10 @@ function formatForecastDays(data) {
     `;
   }).join('');
 }
+// Amadeus API credentials PART 2
+const amadeusKey = 'GFB9M1zGXs6tto0bKjYFfGhy6TvftuWR';
+const amadeusSecret = 'bFJKPGJunj7kgIrF';
 
-// Amadeus API
 async function getAccessToken() {
   const response = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
     method: 'POST',
@@ -155,6 +126,7 @@ async function searchFlights(origin, destination, date, token) {
   const data = await response.json();
   return data.data;
 }
+
 // Event Handlers
 async function handleGetWeather() {
   const origin = originInput.value.trim();
@@ -169,17 +141,15 @@ async function handleGetWeather() {
   getWeatherBtn.disabled = true;
 
   try {
-    const [originData, destinationData, originForecast, destinationForecast] = await Promise.all([
+    const [originData, destinationData] = await Promise.all([
       fetchWeather(origin),
-      fetchWeather(destination),
-      fetchForecast(origin),
-      fetchForecast(destination)
+      fetchWeather(destination)
     ]);
 
     originWeather.innerHTML = formatWeather(originData, 'text-green-700');
     destinationWeather.innerHTML = formatWeather(destinationData, 'text-indigo-700');
-    originForecastDays.innerHTML = formatForecastDays(originForecast);
-    destinationForecastDays.innerHTML = formatForecastDays(destinationForecast);
+    originForecastDays.innerHTML = formatForecastDays(originData);
+    destinationForecastDays.innerHTML = formatForecastDays(destinationData);
 
     log(`Weather loaded for both locations.`, 'success');
   } catch (error) {

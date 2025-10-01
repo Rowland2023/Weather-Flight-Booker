@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Flight Booker</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for subtle visual improvements */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .flight-card-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex flex-col items-center">
+
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl space-y-8">
+
+        <!-- Header -->
+        <header class="text-center py-6">
+            <h1 class="text-4xl font-extrabold text-blue-800">Gemini Flight Booker</h1>
+            <p class="text-lg text-gray-500 mt-2">Find the best deals for your next journey.</p>
+        </header>
+
+        <!-- Search Form Card -->
+        <section id="search-form-section" class="bg-white p-6 sm:p-8 rounded-xl flight-card-shadow transition duration-300 hover:shadow-lg">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">Search for Flights</h2>
+
+            <form id="flight-search-form" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Departure Airport -->
+                <div class="md:col-span-1">
+                    <label for="departure" class="block text-sm font-medium text-gray-700 mb-1">Departure</label>
+                    <input type="text" id="departure" name="departure" placeholder="e.g., JFK" required
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
+                </div>
+
+                <!-- Destination Airport -->
+                <div class="md:col-span-1">
+                    <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+                    <input type="text" id="destination" name="destination" placeholder="e.g., LAX" required
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
+                </div>
+
+                <!-- Departure Date -->
+                <div class="md:col-span-1">
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Departure Date</label>
+                    <input type="date" id="date" name="date" required
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
+                </div>
+
+                <!-- Search Button -->
+                <div class="md:col-span-1 flex items-end">
+                    <button type="submit" id="search-button"
+                            class="w-full p-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01] shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed">
+                        Search Flights
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Flight Results Area -->
+        <section id="results-section" class="w-full">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Flight Results</h2>
+            <div id="flight-results-container" class="bg-white p-6 sm:p-8 rounded-xl flight-card-shadow min-h-[150px] flex items-center justify-center">
+                <p id="results-message" class="text-gray-500 text-center">Enter your details above and click 'Search Flights' to see results.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('flight-search-form');
+            const searchButton = document.getElementById('search-button');
+            const resultsContainer = document.getElementById('flight-results-container');
+            const resultsMessage = document.getElementById('results-message');
+
+            // Set today's date as min date for the date input
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').setAttribute('min', today);
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                // 1. Get input values
+                const departure = document.getElementById('departure').value;
+                const destination = document.getElementById('destination').value;
+                const date = document.getElementById('date').value;
+
+                // 2. Show Loading State
+                searchButton.disabled = true;
+                searchButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Searching...
+                `;
+                resultsContainer.innerHTML = `
+                    <div class="flex flex-col items-center p-8">
+                        <p class="text-lg text-blue-500 font-medium">Fetching flights from ${departure} to ${destination}...</p>
+                        <p class="text-sm text-gray-400 mt-2">This is where your Node proxy will call the Flask API.</p>
+                    </div>
+                `;
+
+                // 3. Simulate API Call (Replace with actual fetch later)
+                // In a real app, this is where you'd fetch from your Node/Express proxy.
+                setTimeout(function() {
+                    searchButton.disabled = false;
+                    searchButton.innerHTML = 'Search Flights';
+                    
+                    // Display mock results
+                    displayMockResults(departure, destination, date);
+
+                }, 2000); // Simulate a 2-second network delay
+            });
+
+
+            /**
+             * Function to display mock flight data.
+             * This structure will be used later to show data returned from the Flask API.
+             */
+            function displayMockResults(departure, destination, date) {
+                const mockFlights = [
+                    { airline: 'BlueJet', number: 'BJ701', price: 155, departureTime: '06:30', arrivalTime: '09:00', duration: '2h 30m' },
+                    { airline: 'AirStream', number: 'AS442', price: 210, departureTime: '11:00', arrivalTime: '13:45', duration: '2h 45m' },
+                    { airline: 'SkyLine', number: 'SL123', price: 180, departureTime: '16:45', arrivalTime: '19:15', duration: '2h 30m' }
+                ];
+
+                let flightsHtml = `
+                    <div class="space-y-4 w-full">
+                        <h3 class="text-xl font-bold text-gray-800">Flights found for ${departure} to ${destination} on ${date}</h3>
+                `;
+
+                mockFlights.forEach(flight => {
+                    flightsHtml += `
+                        <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-blue-50 transition duration-150">
+                            <div class="flex-1 min-w-0 mr-4">
+                                <p class="text-md font-semibold text-gray-900">${flight.departureTime} - ${flight.arrivalTime}</p>
+                                <p class="text-sm text-gray-600">${flight.airline} (${flight.number}) - ${flight.duration}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-2xl font-extrabold text-green-600">$${flight.price}</span>
+                                <button class="ml-4 py-1 px-3 bg-blue-500 text-white text-sm font-medium rounded hover:bg-blue-600 transition">Book</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                flightsHtml += '</div>';
+                resultsContainer.innerHTML = flightsHtml;
+            }
+        });
+    </script>
+</body>
+</html>
