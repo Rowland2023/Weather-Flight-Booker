@@ -2,11 +2,11 @@
   "name": "flight-booker-frontend",
   "version": "1.0.0",
   "description": "Node gateway for Chrome Extension and Flask backend",
-  "main": "server.js",
+  "main": "Frontend/server.js",
   "scripts": {
     "start": "concurrently \"npm run node\" \"npm run flask\"",
-    "node": "cd Frontend && nodemon server.js",
-    "flask": "cd Backend && flask --app app run --reload"
+    "node": "nodemon Frontend/server.js",
+    "flask": "python3 Backend/app.py"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
