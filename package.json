@@ -8,7 +8,7 @@
     "dev": "node_modules/.bin/concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"",
     "node": "node server.js",
     "flask": "python3 Backend/app.py",
-    "postinstall": "pip install -r Backend/requirements.txt"
+    "postinstall": "pip install -r Backend/requirements.txt && chmod +x node_modules/.bin/concurrently"
   },
   "dependencies": {
     "express": "^4.18.2",
