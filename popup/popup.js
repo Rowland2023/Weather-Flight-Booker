@@ -12,10 +12,9 @@ const destinationForecastDays = document.getElementById('destination-forecast-da
 const flightDetails = document.getElementById('flight-details');
 const logDisplay = document.getElementById('log-display');
 
-// API Keys
-const weatherKey = '078a0109c369079731b557bebe2157c6';
-const amadeusKey = 'GFB9M1zGXs6tto0bKjYFfGhy6TvftuWR';
-const amadeusSecret = 'bFJKPGJunj7kgIrF';
+// Environment detection
+const isExtension = window.location.protocol === 'chrome-extension:';
+const BASE_URL = isExtension ? '' : 'https://weather-flight-booker.onrender.com';
 
 // IATA Code Mapping
 const airportCodes = {
@@ -46,46 +45,20 @@ function log(message, type = 'info') {
   console.log(`[${type.toUpperCase()}] ${timestamp}: ${message}`);
 }
 
-// Normalize location for weather API
-function normalizeLocation(location) {
-  const city = location.trim();
-  const presets = {
-    'Lagos': 'Lagos,NG',
-    'London': 'London,GB',
-    'Paris': 'Paris,FR',
-    'Accra': 'Accra,GH',
-    'New York': 'New York,US',
-    'Toronto': 'Toronto,CA',
-    'Berlin': 'Berlin,DE',
-    'Tokyo': 'Tokyo,JP'
-  };
-  return presets[city] || city;
-}
-
-// Weather API
+// Weather API via backend
 async function fetchWeather(location) {
-  const normalized = normalizeLocation(location);
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(normalized)}&units=metric&appid=${weatherKey}`;
-  const response = await fetch(url);
+  const response = await fetch(`${BASE_URL}/weather?city=${encodeURIComponent(location)}`);
   if (!response.ok) throw new Error(`Weather data not found for ${location}`);
   return await response.json();
 }
 
-async function fetchForecast(location) {
-  const normalized = normalizeLocation(location);
-  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(normalized)}&units=metric&appid=${weatherKey}`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Forecast data not found for ${location}`);
-  return await response.json();
-}
-
 function formatWeather(data, labelColor) {
-  const temp = `${Math.round(data.main.temp)}°C`;
-  const conditions = data.weather[0].description;
-  const icon = data.weather[0].icon;
-  const wind = `${data.wind.speed} m/s`;
-  const visibility = data.visibility ? `${data.visibility / 1000} km` : 'N/A';
-  const pressure = `${data.main.pressure} hPa`;
+  const temp = `${Math.round(data.list[0].main.temp)}°C`;
+  const conditions = data.list[0].weather[0].description;
+  const icon = data.list[0].weather[0].icon;
+  const wind = `${data.list[0].wind.speed} m/s`;
+  const visibility = data.list[0].visibility ? `${data.list[0].visibility / 1000} km` : 'N/A';
+  const pressure = `${data.list[0].main.pressure} hPa`;
 
   return `
     <div class="flex items-center gap-3">
@@ -129,32 +102,18 @@ function formatForecastDays(data) {
     `;
   }).join('');
 }
-
-// Amadeus API
-async function getAccessToken() {
-  const response = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
+//                 part 2
+// Flight booking via backend
+async function bookFlight(location, date) {
+  const response = await fetch(`${BASE_URL}/spawn-booking`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: amadeusKey,
-      client_secret: amadeusSecret
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ location, date })
   });
-  const data = await response.json();
-  return data.access_token;
+  if (!response.ok) throw new Error('Booking failed');
+  return await response.json();
 }
 
-async function searchFlights(origin, destination, date, token) {
-  const originCode = airportCodes[origin] || origin;
-  const destinationCode = airportCodes[destination] || destination;
-  const url = `https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${originCode}&destinationLocationCode=${destinationCode}&departureDate=${date}&adults=1`;
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await response.json();
-  return data.data;
-}
 // Event Handlers
 async function handleGetWeather() {
   const origin = originInput.value.trim();
@@ -169,17 +128,15 @@ async function handleGetWeather() {
   getWeatherBtn.disabled = true;
 
   try {
-    const [originData, destinationData, originForecast, destinationForecast] = await Promise.all([
+    const [originData, destinationData] = await Promise.all([
       fetchWeather(origin),
-      fetchWeather(destination),
-      fetchForecast(origin),
-      fetchForecast(destination)
+      fetchWeather(destination)
     ]);
 
     originWeather.innerHTML = formatWeather(originData, 'text-green-700');
     destinationWeather.innerHTML = formatWeather(destinationData, 'text-indigo-700');
-    originForecastDays.innerHTML = formatForecastDays(originForecast);
-    destinationForecastDays.innerHTML = formatForecastDays(destinationForecast);
+    originForecastDays.innerHTML = formatForecastDays(originData);
+    destinationForecastDays.innerHTML = formatForecastDays(destinationData);
 
     log(`Weather loaded for both locations.`, 'success');
   } catch (error) {
@@ -195,53 +152,41 @@ async function handleGetWeather() {
 }
 
 async function handleBookFlight() {
-  const origin = originInput.value.trim();
   const destination = destinationInput.value.trim();
   const date = departureDate.value;
 
-  if (!origin || !destination || !date) {
-    log('Origin, destination, and date are required.', 'warning');
+  if (!destination || !date) {
+    log('Destination and date are required.', 'warning');
     return;
   }
 
-  log(`Searching flights from ${origin} to ${destination} on ${date}...`, 'info');
+  log(`Booking flight to ${destination} on ${date}...`, 'info');
   loader.classList.remove('hidden');
   bookFlightBtn.disabled = true;
 
   try {
-    const token = await getAccessToken();
-    const flights = await searchFlights(origin, destination, date, token);
-
-    if (!flights || flights.length === 0) {
-      throw new Error('No flights found.');
-    }
-
-    const flight = flights[0];
-    const itinerary = flight.itineraries[0];
-    const segment = itinerary.segments[0];
-    const price = flight.price.total;
-    const airline = segment.carrierCode;
-    const stops = itinerary.segments.length - 1;
+    const result = await bookFlight(destination, date);
+    const details = result.details;
 
     flightDetails.innerHTML = `
       <ul class="space-y-2">
-        <li><strong>Route:</strong> ${origin} → ${destination}</li>
-        <li><strong>Date:</strong> ${date}</li>
-        <li><strong>Airline:</strong> ${airline}</li>
-        <li><strong>Stops:</strong> ${stops === 0 ? 'Non-stop' : stops}</li>
-        <li><strong>Price:</strong> $${price}</li>
-        <li><strong>Status:</strong> Available</li>
+        <li><strong>Location:</strong> ${details.location}</li>
+        <li><strong>Date:</strong> ${details.date}</li>
+        <li><strong>Flight:</strong> ${details.flight}</li>
+        <li><strong>Departure:</strong> ${details.departure}</li>
+        <li><strong>Arrival:</strong> ${details.arrival}</li>
+        <li><strong>Status:</strong> Confirmed</li>
       </ul>
     `;
 
-    log(`Flight found: ${airline} for $${price}`, 'success');
+    log(`Flight booked: ${details.flight}`, 'success');
   } catch (error) {
-    log(`Flight search failed: ${error.message}`, 'error');
+    log(`Booking failed: ${error.message}`, 'error');
     flightDetails.innerHTML = `
       <ul class="space-y-2 text-red-500">
-        <li><strong>Error:</strong> Could not load flight data.</li>
-        <li><strong>Fallback:</strong> Simulated flight from ${origin} to ${destination} on ${date}</li>
-        <li><strong>Price:</strong> ₦250,000</li>
+        <li><strong>Error:</strong> Could not book flight.</li>
+        <li><strong>Fallback:</strong> Simulated flight to ${destination} on ${date}</li>
+        <li><strong>Flight:</strong> Air Nigeria 101</li>
         <li><strong>Status:</strong> On Time</li>
       </ul>
     `;
@@ -254,4 +199,4 @@ async function handleBookFlight() {
 // Final Listeners
 getWeatherBtn.addEventListener('click', handleGetWeather);
 bookFlightBtn.addEventListener('click', handleBookFlight);
-window.onload = () => log('Extension popup ready.', 'info');
+window.onload = () => log('Popup ready.', 'info');
