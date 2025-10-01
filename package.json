@@ -2,18 +2,19 @@
   "name": "flight-booker-frontend",
   "version": "1.0.0",
   "description": "Node.js proxy server for Flask backend.",
-  "main": "Frontend/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "npx concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"",
-    "node": "node Frontend/server.js",
-    "flask": "cd Backend && python3 app.py"
+    "start": "sh -c 'node_modules/.bin/concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"'",
+    "dev": "sh -c 'node_modules/.bin/concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"'",
+    "node": "node server.js",
+    "flask": "python3 Backend/app.py",
+    "postinstall": "pip install -r Backend/requirements.txt"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "concurrently": "^8.2.2",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "concurrently": "^8.2.2"
   }
 }
