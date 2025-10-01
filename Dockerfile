@@ -1,20 +1,21 @@
-# Use a base image with Node and Python
+# Use the official Node image as the base
 FROM node:18-bullseye
 
-# Install Python and pip
-RUN apt-get update && apt-get install -y python3 python3-pip
+# Set the working directory
+WORKDIR /app/Frontend
 
-# Set working directory
-WORKDIR /app
-
-# Copy everything
-COPY . .
+# Copy the package.json and package-lock.json
+COPY Frontend/package*.json ./
 
 # Install Node dependencies
 RUN npm install
 
-# Install Python dependencies
-RUN pip3 install -r backend/requirements.txt
+# Copy the rest of the frontend code
+COPY Frontend .
 
-# Start both frontend and backend
-CMD ["npx", "concurrently", "npm run node", "npm run flask"]
+# Expose the port (e.g., 3000)
+EXPOSE 3000
+
+# Start the Node server (which is the proxy)
+# This executes: "node index.js"
+CMD ["npm", "start"]
