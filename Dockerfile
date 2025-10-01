@@ -9,11 +9,11 @@ WORKDIR /app
 # Copy all files
 COPY . .
 
-# Install Node dependencies and concurrently
-RUN cd Frontend && npm install && npm install concurrently
+# Install Node dependencies (from root-level package.json)
+RUN npm install
 
 # Install Python dependencies
-RUN cd Backend && pip3 install -r requirements.txt
+RUN pip3 install -r Backend/requirements.txt
 
 # Expose frontend port
 EXPOSE 3000
