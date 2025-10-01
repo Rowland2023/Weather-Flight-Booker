@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"",
     "dev": "npx concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"",
-    "node": "node server.js",
+    "node": "node Frontend/server.js",
     "flask": "python3 Backend/app.py"
   },
   "dependencies": {
