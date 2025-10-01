@@ -28,7 +28,7 @@ app.use(express.json());
 
 // Serve popup UI
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'popup', 'popup.html'));
+  res.sendFile(path.join(__dirname,'Extension','popup', 'popup.html'));
 });
 
 // Serve static assets
