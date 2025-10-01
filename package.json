@@ -4,8 +4,8 @@
   "description": "Node.js proxy server for Flask backend.",
   "main": "index.js",
   "scripts": {
-    "start": "npx concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"",
-    "dev": "npx concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"",
+    "start": "node_modules/.bin/concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"",
+    "dev": "node_modules/.bin/concurrently --kill-others-on-fail \"npm run flask\" \"npm run node\"",
     "node": "node index.js",
     "flask": "cd ../Backend && python3 app.py"
   },
