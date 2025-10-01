@@ -4,16 +4,16 @@
   "description": "Node gateway for Chrome Extension and Flask backend",
   "main": "Frontend/server.js",
   "scripts": {
-    "start": "concurrently \"npm run node\" \"npm run flask\"",
+    "start": "npx concurrently \"npm run node\" \"npm run flask\"",
     "node": "nodemon Frontend/server.js",
     "flask": "python3 Backend/app.py"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1",
     "nodemon": "^3.1.10"
   },
   "dependencies": {
     "axios": "^1.6.0",
+    "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
