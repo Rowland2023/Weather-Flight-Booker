@@ -10,9 +10,10 @@
     "flask": "python3 Backend/app.py"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "axios": "^1.12.2",
+    "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
-    "concurrently": "^8.2.2"
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
