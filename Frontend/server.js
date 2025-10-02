@@ -32,6 +32,7 @@ app.get('/', (req, res) => {
 });
 
 // Serve static assets
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/popup', express.static(path.join(__dirname, 'popup')));
 app.use('/style', express.static(path.resolve(__dirname, '..', 'style')));
